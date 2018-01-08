@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tests</title>
+</head>
+<body>
+    <table border="1">
+        <tr>
+            <th>SYMBOL</th>
+            <th>NAME</th>
+            <th>ACTIVE</th>
+            <th>BALANCE</th>
+            <th>BOUGHT BY (&dollar;)</th>
+            <th>CURRENT (&dollar;)</th>
+            <th>PROFIT (&dollar;)</th>
+            <th>UPDATED AT</th>
+            <th>NOTICE</th>
+        </tr>
+        {{#coins}}
+        <tr>
+            <td>{{symbol}}</td>
+            <td>{{name}}</td>
+            <td>{{active}}</td>
+            <td>{{balance}}</td>
+            <td>{{bought_by}}</td>
+            <td>{{current}}</td>
+            <td>{{profit}}</td>
+            <td>{{updated_at}}</td>
+            <td>{{notice}}</td>
+        </tr>
+        {{/coins}}
+    </table>
+    <h3>1 BTC = {{btc_price}} &dollar;</h3>
+    <h3>TOTAL (bought): {{total.bought}} &dollar;</h3>
+    <h3>TOTAL (current): {{total.current}} &dollar;</h3>
+    <h3>TOTAL (profit): {{total.profit}} &dollar;</h3>
+</body>
+</html>

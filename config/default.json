@@ -1,0 +1,31 @@
+{
+  "server": {
+    "port": 3000
+  },
+  "bittrex": {
+    "apikey": "",
+    "apisecret": ""
+  },
+  "db": {
+    "host": "localhost",
+    "user": "",
+    "password": "",
+    "database": ""
+  },
+  "smtp": {
+    "subject": "",
+    "host": "",
+    "port": 465,
+    "secureConnection": true,
+    "recipients": "",
+    "sender": "",
+    "sendInterval": 5,
+    "auth": {
+      "user": "",
+      "pass": ""
+    }
+  },
+  "logger": {
+    "notifyByMail": false
+  }
+}
