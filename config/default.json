@@ -32,7 +32,7 @@
   "crones": {
     "syncCurrenciesJob": {
       "start": false,
-      "cronTime": "00 02 * * * *"
+      "cronTime": "00 03 * * * *"
     },
     "syncMarketsJob": {
       "start": false,

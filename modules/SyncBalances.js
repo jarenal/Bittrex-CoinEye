@@ -28,65 +28,82 @@ SyncBalances.prototype.all = function(items) {
         );
         callback(err);
       }
-  
+
       connection.query(
         'SELECT * FROM markets WHERE currencies_id=? ORDER BY created_at DESC LIMIT 1',
         ['BTC'],
         function(err, marketsResults, marketsFields) {
           if (err) {
             loggerButler.fatal('SyncBalances: SELECT error', err, true);
-            reject(err)
+            reject(err);
           }
-      
+
           var btc_price = 0;
-  
+
           if (marketsResults.length) {
             btc_price = marketsResults[0].last;
             loggerButler.mark('SyncBalances: BTC price on market', btc_price);
           } else {
-            loggerButler.fatal('SyncBalances: No data found for BTC market', '', true);
+            loggerButler.fatal(
+              'SyncBalances: No data found for BTC market',
+              '',
+              true
+            );
           }
-  
+
           each(
             items,
             function(item, next) {
               setTimeout(function() {
                 loggerButler.debug('SyncBalances: Working on', item.Currency);
-        
+
                 connection.query(
                   'SELECT * FROM balances WHERE id=?',
                   [item.Currency],
                   function(err, balancesResults, fields) {
                     if (err) {
-                      loggerButler.fatal('SyncBalances: SELECT error', err, true);
+                      loggerButler.fatal(
+                        'SyncBalances: SELECT error',
+                        err,
+                        true
+                      );
                       callback(err);
                     }
-            
+
                     connection.query(
                       'SELECT * FROM markets WHERE currencies_id=? ORDER BY created_at DESC LIMIT 1',
                       [item.Currency],
                       function(err, coinResults, coinFields) {
                         if (err) {
-                          loggerButler.fatal('SyncBalances: SELECT error', err, true);
+                          loggerButler.fatal(
+                            'SyncBalances: SELECT error',
+                            err,
+                            true
+                          );
                           callback(err);
                         }
-                
+
                         var coinLastPrice = 0;
-                
+
                         if (coinResults.length) {
                           coinLastPrice = coinResults[0].last;
                         }
-                
-                        var balanceCurrentPrice = coinLastPrice * item.Balance;
+
+                        var balanceCurrentPrice = 0;
+                        if (item.Currency === 'BTC') {
+                          balanceCurrentPrice = item.Balance;
+                        } else {
+                          balanceCurrentPrice = coinLastPrice * item.Balance;
+                        }
+
                         var balanceProfit = 0;
                         var balanceBuyPrice = 0;
-                
+
                         // If balance exists
                         if (balancesResults.length) {
-                  
                           balanceBuyPrice = balancesResults[0].buy_price;
                           balanceProfit = balanceCurrentPrice - balanceBuyPrice;
-                  
+
                           // update
                           connection.query(
                             'UPDATE balances SET balance=?, current_price=?, profit=?, btc_price=?, updated_at=? WHERE id=?',
@@ -107,7 +124,7 @@ SyncBalances.prototype.all = function(items) {
                                 );
                                 next(err);
                               }
-                      
+
                               // Insert log
                               connection.query(
                                 'INSERT INTO balances_log SET ?',
@@ -128,7 +145,7 @@ SyncBalances.prototype.all = function(items) {
                                     );
                                     next(err);
                                   }
-                                  
+
                                   next(false, item.Currency);
                                 }
                               );
@@ -153,7 +170,7 @@ SyncBalances.prototype.all = function(items) {
                                 );
                                 next(err);
                               }
-                      
+
                               // Insert log
                               connection.query(
                                 'INSERT INTO balances_log SET ?',
@@ -174,7 +191,7 @@ SyncBalances.prototype.all = function(items) {
                                     );
                                     next(err);
                                   }
-                                  
+
                                   next(false, item.Currency);
                                 }
                               );
@@ -196,12 +213,12 @@ SyncBalances.prototype.all = function(items) {
                 );
                 reject(err);
               }
-      
+
               resolve(transformedItems);
             }
           );
-        });
-
+        }
+      );
     });
   });
 };
