@@ -30,10 +30,10 @@ SyncMarkets.prototype.all = function(items) {
       if (err) {
         loggerButler.fatal(
           'SyncMarkets: Database connection error',
-          err.message,
+          err,
           true
         );
-        callback(new Error('SyncMarkets: Database connection error'));
+        callback(err);
       }
 
       each(
@@ -46,7 +46,6 @@ SyncMarkets.prototype.all = function(items) {
 
             // Insert
             bittrex.getticker({ market: market_alias }, function(err, ticker) {
-              loggerButler.debug('SyncMarkets: ticker', ticker);
               if (ticker) {
                 connection.query(
                   'INSERT INTO markets SET ?',
@@ -58,27 +57,19 @@ SyncMarkets.prototype.all = function(items) {
                   },
                   function(err, results, fields) {
                     if (err) {
-                      loggerButler.fatal('SyncMarkets: INSERT error', err);
-                      next(new Error('SyncMarkets: INSERT error'));
+                      loggerButler.fatal('SyncMarkets: INSERT error', err, true);
+                      next(err);
                     }
-
-                    loggerButler.info(
-                      'SyncMarkets: INSERT success!',
-                      item.Currency
-                    );
+                    
                     next(false, item);
                   }
                 );
               } else {
                 if (item.Currency === 'BTC') {
-                  loggerButler.mark('SyncMarkets: BTC!!!! ', item.Currency);
+                  loggerButler.debug('SyncMarkets: getting BTC price', item.Currency);
                   exchange
                     .getTicker({ currency: 'USD' })
                     .then(function(result) {
-                      loggerButler.debug(
-                        'SyncMarkets: exchange.getTicker() result for BTC',
-                        result
-                      );
                       connection.query(
                         'INSERT INTO markets SET ?',
                         {
@@ -91,15 +82,13 @@ SyncMarkets.prototype.all = function(items) {
                           if (err) {
                             loggerButler.fatal(
                               'SyncMarkets: INSERT error',
-                              err
+                              err,
+                              true
                             );
-                            next(new Error('SyncMarkets: INSERT error'));
+                            next(err);
                           }
-
-                          loggerButler.info(
-                            'SyncMarkets: INSERT success!',
-                            item.Currency
-                          );
+  
+                          loggerButler.debug('SyncMarkets: BTC last price', result.last);
                           next(false, item);
                         }
                       );
@@ -108,7 +97,8 @@ SyncMarkets.prototype.all = function(items) {
                       if (err) {
                         loggerButler.fatal(
                           'SyncMarkets: Error on getTicker()',
-                          err
+                          err,
+                          true
                         );
                         next(err);
                       }
@@ -126,11 +116,10 @@ SyncMarkets.prototype.all = function(items) {
         },
         function(err, transformedItems) {
           if (err) {
-            loggerButler.fatal('SyncMarkets: Error processing currencies', err);
+            loggerButler.fatal('SyncMarkets: Error processing currencies', err, true);
             reject(err);
           }
 
-          loggerButler.debug('SyncMarkets: transformedItems', transformedItems);
           resolve(transformedItems);
         }
       );

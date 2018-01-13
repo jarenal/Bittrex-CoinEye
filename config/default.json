@@ -27,5 +27,20 @@
   },
   "logger": {
     "notifyByMail": false
+  },
+  "timeZone": "Europe/Rome",
+  "crones": {
+    "syncCurrenciesJob": {
+      "start": false,
+      "cronTime": "00 02 * * * *"
+    },
+    "syncMarketsJob": {
+      "start": false,
+      "cronTime": "00 */5 * * * *"
+    },
+    "reloadBalancesJob": {
+      "start": false,
+      "cronTime": "00 * * * * *"
+    }
   }
 }

@@ -4,6 +4,7 @@ const config = require('config');
 const mysql = require('mysql');
 const loggerButler = new (require('./LoggerButler'))();
 const async = require('async');
+const moment = require('moment');
 
 // MySQL setup
 var pool = mysql.createPool({
@@ -22,10 +23,10 @@ SyncCurrencies.prototype.all = function(items) {
       if (err) {
         loggerButler.fatal(
           'SyncCurrencies: Database connection error',
-          err.message,
+          err,
           true
         );
-        reject(new Error('SyncCurrencies: Database connection error'));
+        reject(err);
       }
 
       async.each(
@@ -36,25 +37,30 @@ SyncCurrencies.prototype.all = function(items) {
             [item.Currency],
             function(err, results, fields) {
               if (err) {
-                loggerButler.fatal('SyncCurrencies: SELECT error', err);
-                callback(new Error('SyncCurrencies: SELECT error'));
+                loggerButler.fatal('SyncCurrencies: SELECT error', err, true);
+                callback(err);
               }
 
               // If currency exists
               if (results.length) {
                 // update
                 connection.query(
-                  'UPDATE currencies SET name=?, active=?, notice=? WHERE id=?',
+                  'UPDATE currencies SET name=?, active=?, notice=?, updated_at=? WHERE id=?',
                   [
                     item.CurrencyLong,
                     item.IsActive,
                     item.Notice,
+                    moment().format('YYYY-MM-DD HH:mm:ss'),
                     item.Currency
                   ],
                   function(err, results, fields) {
                     if (err) {
-                      loggerButler.fatal('SyncCurrencies: UPDATE error', err);
-                      callback(new Error('SyncCurrencies: UPDATE error'));
+                      loggerButler.fatal(
+                        'SyncCurrencies: UPDATE error',
+                        err,
+                        true
+                      );
+                      callback(err);
                     }
 
                     loggerButler.info('UPDATE success!', item.Currency);
@@ -73,8 +79,12 @@ SyncCurrencies.prototype.all = function(items) {
                   },
                   function(err, results, fields) {
                     if (err) {
-                      loggerButler.fatal('SyncCurrencies: INSERT error', err);
-                      callback(new Error('SyncCurrencies: INSERT error'));
+                      loggerButler.fatal(
+                        'SyncCurrencies: INSERT error',
+                        err,
+                        true
+                      );
+                      callback(err);
                     }
 
                     loggerButler.info('INSERT success!', item.Currency);
@@ -89,7 +99,8 @@ SyncCurrencies.prototype.all = function(items) {
           if (err) {
             loggerButler.fatal(
               'SyncCurrencies: Error processing currencies',
-              err
+              err,
+              true
             );
             reject(err);
           }

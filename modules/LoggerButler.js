@@ -1,11 +1,12 @@
 'use strict';
 
-var config = require('config');
-var log4js = require('log4js');
+const config = require('config');
+const log4js = require('log4js');
 
 log4js.configure({
   appenders: {
     console: { type: 'console' },
+    file: { type: 'file', filename: 'var/logs/express.log' },
     email: {
       type: 'smtp',
       subject: config.get('smtp.subject'),
@@ -27,15 +28,21 @@ log4js.configure({
     }
   },
   categories: {
+    express: { appenders: ['file'], level: 'all' },
     default: { appenders: ['console'], level: 'debug' },
     mailer: { appenders: ['email'], level: 'error' }
   }
 });
 
+var logger_express = log4js.getLogger('express');
 var logger = log4js.getLogger('default');
 var loggerMailer = log4js.getLogger('mailer');
 
-function LoggerButler() {}
+function LoggerButler(router) {
+  if (router) {
+    router.use(log4js.connectLogger(logger_express, { level: 'auto' }));
+  }
+}
 
 LoggerButler.prototype.mark = function(message, object, notifyByMail) {
   logger.mark(message, object);
