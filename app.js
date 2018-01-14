@@ -24,6 +24,24 @@ io.on('connection', function(socket) {
     'New websocket connection!',
     socket.client.request.headers['user-agent']
   );
+
+  loggerButler.info(
+    'BalancesModel.all(): start at',
+    moment().format('HH:mm:ss')
+  );
+  BalancesModel.all()
+    .then(function(data) {
+      io.sockets.emit('reloadBalances', data);
+    })
+    .then(function() {
+      loggerButler.info(
+        'BalancesModel.all(): finished at',
+        moment().format('HH:mm:ss')
+      );
+    })
+    .catch(function(err) {
+      loggerButler.fatal('BalancesModel.all(): Error', err);
+    });
 });
 
 //app.use(express.static('public'));
@@ -40,15 +58,21 @@ bittrex.options({
   inverse_callback_arguments: true
 });
 
-// Currencies: Run at 2 min
 var syncCurrenciesJob = new cron.CronJob({
   cronTime: config.get('crones.syncCurrenciesJob.cronTime'),
   onTick: function() {
-    loggerButler.info('syncCurrenciesJob: start at', moment().format('HH:mm:ss'));
+    loggerButler.info(
+      'syncCurrenciesJob: start at',
+      moment().format('HH:mm:ss')
+    );
 
     bittrex.getcurrencies(function(err, data) {
       if (err) {
-        loggerButler.error('syncCurrenciesJob: bittrex.getcurrencies() call error', err, true);
+        loggerButler.error(
+          'syncCurrenciesJob: bittrex.getcurrencies() call error',
+          err,
+          true
+        );
         return false;
       }
 
@@ -57,7 +81,10 @@ var syncCurrenciesJob = new cron.CronJob({
           syncCurrencies
             .all(data.result)
             .then(function(status) {
-              loggerButler.info('syncCurrenciesJob: finished at', moment().format('HH:mm:ss'));
+              loggerButler.info(
+                'syncCurrenciesJob: finished at',
+                moment().format('HH:mm:ss')
+              );
             })
             .catch(function(err) {
               if (err) {
@@ -80,7 +107,6 @@ var syncCurrenciesJob = new cron.CronJob({
   timeZone: timeZone
 });
 
-// Markets: Run every 5 minute
 var syncMarketsJob = new cron.CronJob({
   cronTime: config.get('crones.syncMarketsJob.cronTime'),
   onTick: function() {
@@ -88,7 +114,11 @@ var syncMarketsJob = new cron.CronJob({
 
     bittrex.getbalances(function(err, data) {
       if (err) {
-        loggerButler.error('syncMarketsJob: bittrex.getbalances() call error', err, true);
+        loggerButler.error(
+          'syncMarketsJob: bittrex.getbalances() call error',
+          err,
+          true
+        );
         return false;
       }
 
@@ -99,8 +129,11 @@ var syncMarketsJob = new cron.CronJob({
           })
             .then(syncMarkets.all)
             .then(syncBalances.all)
-            .then(function () {
-              loggerButler.info('syncMarketsJob: finished at', moment().format('HH:mm:ss'));
+            .then(function() {
+              loggerButler.info(
+                'syncMarketsJob: finished at',
+                moment().format('HH:mm:ss')
+              );
             })
             .catch(function(err) {
               if (err) {
@@ -123,21 +156,29 @@ var syncMarketsJob = new cron.CronJob({
   timeZone: timeZone
 });
 
-// reloadBalancesJob: Run every minute
 var reloadBalancesJob = new cron.CronJob({
   cronTime: config.get('crones.reloadBalancesJob.cronTime'),
   onTick: function() {
-    loggerButler.info('reloadBalancesJob: start at', moment().format('HH:mm:ss'));
+    loggerButler.info(
+      'reloadBalancesJob: start at',
+      moment().format('HH:mm:ss')
+    );
 
     BalancesModel.all()
       .then(function(data) {
         io.sockets.emit('reloadBalances', data);
       })
-      .then(function () {
-        loggerButler.info('reloadBalancesJob: finished at', moment().format('HH:mm:ss'));
+      .then(function() {
+        loggerButler.info(
+          'reloadBalancesJob: finished at',
+          moment().format('HH:mm:ss')
+        );
       })
       .catch(function(err) {
-        loggerButler.fatal('reloadBalancesJob: Error on BalancesModel.all()', err);
+        loggerButler.fatal(
+          'reloadBalancesJob: Error on BalancesModel.all()',
+          err
+        );
       });
   },
   start: config.get('crones.reloadBalancesJob.start'),

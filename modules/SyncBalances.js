@@ -26,7 +26,8 @@ SyncBalances.prototype.all = function(items) {
           err,
           true
         );
-        callback(err);
+        connection.release();
+        reject(err);
       }
 
       connection.query(
@@ -35,6 +36,7 @@ SyncBalances.prototype.all = function(items) {
         function(err, marketsResults, marketsFields) {
           if (err) {
             loggerButler.fatal('SyncBalances: SELECT error', err, true);
+            connection.release();
             reject(err);
           }
 
@@ -44,7 +46,7 @@ SyncBalances.prototype.all = function(items) {
             btc_price = marketsResults[0].last;
             loggerButler.mark('SyncBalances: BTC price on market', btc_price);
           } else {
-            loggerButler.fatal(
+            loggerButler.warn(
               'SyncBalances: No data found for BTC market',
               '',
               true
@@ -67,7 +69,7 @@ SyncBalances.prototype.all = function(items) {
                         err,
                         true
                       );
-                      callback(err);
+                      next(err);
                     }
 
                     connection.query(
@@ -80,7 +82,7 @@ SyncBalances.prototype.all = function(items) {
                             err,
                             true
                           );
-                          callback(err);
+                          next(err);
                         }
 
                         var coinLastPrice = 0;
@@ -211,9 +213,11 @@ SyncBalances.prototype.all = function(items) {
                   err,
                   true
                 );
+                connection.release();
                 reject(err);
               }
 
+              connection.release();
               resolve(transformedItems);
             }
           );

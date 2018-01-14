@@ -25,6 +25,7 @@ BalancesModel.prototype.all = function() {
           err,
           true
         );
+        connection.release();
         reject(err);
       }
 
@@ -34,6 +35,7 @@ BalancesModel.prototype.all = function() {
         function(err, results, fields) {
           if (err) {
             loggerButler.fatal('BalancesModel: SELECT error', err, true);
+            connection.release();
             reject(err);
           }
 
@@ -77,6 +79,7 @@ BalancesModel.prototype.all = function() {
             loggerButler.warn('BalancesModel: No records found', '', true);
           }
 
+          connection.release();
           resolve(data);
         }
       );

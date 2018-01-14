@@ -26,6 +26,7 @@ SyncCurrencies.prototype.all = function(items) {
           err,
           true
         );
+        connection.release();
         reject(err);
       }
 
@@ -102,9 +103,11 @@ SyncCurrencies.prototype.all = function(items) {
               err,
               true
             );
+            connection.release();
             reject(err);
           }
 
+          connection.release();
           resolve('success');
         }
       );

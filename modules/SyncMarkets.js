@@ -28,12 +28,9 @@ SyncMarkets.prototype.all = function(items) {
   return new Promise(function(resolve, reject) {
     pool.getConnection(function(err, connection) {
       if (err) {
-        loggerButler.fatal(
-          'SyncMarkets: Database connection error',
-          err,
-          true
-        );
-        callback(err);
+        loggerButler.fatal('SyncMarkets: Database connection error', err, true);
+        connection.release();
+        reject(err);
       }
 
       each(
@@ -57,16 +54,23 @@ SyncMarkets.prototype.all = function(items) {
                   },
                   function(err, results, fields) {
                     if (err) {
-                      loggerButler.fatal('SyncMarkets: INSERT error', err, true);
+                      loggerButler.fatal(
+                        'SyncMarkets: INSERT error',
+                        err,
+                        true
+                      );
                       next(err);
                     }
-                    
+
                     next(false, item);
                   }
                 );
               } else {
                 if (item.Currency === 'BTC') {
-                  loggerButler.debug('SyncMarkets: getting BTC price', item.Currency);
+                  loggerButler.debug(
+                    'SyncMarkets: getting BTC price',
+                    item.Currency
+                  );
                   exchange
                     .getTicker({ currency: 'USD' })
                     .then(function(result) {
@@ -87,8 +91,11 @@ SyncMarkets.prototype.all = function(items) {
                             );
                             next(err);
                           }
-  
-                          loggerButler.debug('SyncMarkets: BTC last price', result.last);
+
+                          loggerButler.debug(
+                            'SyncMarkets: BTC last price',
+                            result.last
+                          );
                           next(false, item);
                         }
                       );
@@ -116,10 +123,16 @@ SyncMarkets.prototype.all = function(items) {
         },
         function(err, transformedItems) {
           if (err) {
-            loggerButler.fatal('SyncMarkets: Error processing currencies', err, true);
+            loggerButler.fatal(
+              'SyncMarkets: Error processing currencies',
+              err,
+              true
+            );
+            connection.release();
             reject(err);
           }
 
+          connection.release();
           resolve(transformedItems);
         }
       );
