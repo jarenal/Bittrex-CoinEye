@@ -95,7 +95,7 @@ SyncBalances.prototype.all = function(items) {
                         if (item.Currency === 'BTC') {
                           balanceCurrentPrice = item.Balance;
                         } else {
-                          balanceCurrentPrice = coinLastPrice * item.Balance;
+                          balanceCurrentPrice = (coinLastPrice * item.Balance) * btc_price;
                         }
 
                         var balanceProfit = 0;
@@ -103,7 +103,7 @@ SyncBalances.prototype.all = function(items) {
 
                         // If balance exists
                         if (balancesResults.length) {
-                          balanceBuyPrice = balancesResults[0].buy_price;
+                          balanceBuyPrice = balancesResults[0].buy_price * balancesResults[0].btc_price_original;
                           balanceProfit = balanceCurrentPrice - balanceBuyPrice;
 
                           // update
@@ -133,10 +133,11 @@ SyncBalances.prototype.all = function(items) {
                                 {
                                   balances_id: item.Currency,
                                   balance: item.Balance,
-                                  buy_price: balanceBuyPrice,
+                                  buy_price: balancesResults[0].buy_price,
                                   current_price: balanceCurrentPrice,
                                   profit: balanceProfit,
-                                  btc_price: btc_price
+                                  btc_price: btc_price,
+                                  btc_price_original: balancesResults[0].btc_price_original
                                 },
                                 function(err, results, fields) {
                                   if (err) {

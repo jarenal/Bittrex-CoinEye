@@ -50,9 +50,9 @@ BalancesModel.prototype.all = function() {
             data.btc_price = results[0].btc_price;
 
             results.forEach(function(item) {
-              var bought_by = item.buy_price * item.btc_price;
-              var current_price = item.current_price * item.btc_price;
-              var profit = item.profit * item.btc_price;
+              var bought_by = item.buy_price * item.btc_price_original;
+              var current_price = item.current_price;
+              var profit = item.profit;
               var coin = {
                 symbol: item.id,
                 name: item.name,
