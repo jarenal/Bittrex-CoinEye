@@ -1,7 +1,7 @@
 {
-  "name": "coineye",
+  "name": "Bittrex-CoinEye",
   "version": "1.0.0",
-  "description": "",
+  "description": "Lightweight dashboard for to see a list of your coins at Bittrex",
   "main": "app.js",
   "scripts": {
     "start": "forever -a -l var/logs/forever.log -o var/logs/out.log -e var/logs/error.log -w app.js",
